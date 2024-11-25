@@ -1,23 +1,15 @@
 import { DataTypes } from "sequelize";
 
-const BlogModel = (sequelize) => {
+const OrderModel = (sequelize) => {
     return sequelize.define(
-        "Blog",
+        "Order",
         {
-            blog_id: {
+            order_id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
                 autoIncrement: true,
             },
-            title: {
-                type: DataTypes.STRING(255),
-                allowNull: false,
-            },
-            content: {
-                type: DataTypes.TEXT,
-                allowNull: false,
-            },
-            author_id: {
+            user_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
@@ -26,16 +18,29 @@ const BlogModel = (sequelize) => {
                 },
                 onDelete: "CASCADE",
             },
+            total_price: {
+                type: DataTypes.DECIMAL(10, 2),
+                allowNull: false,
+            },
+            status: {
+                type: DataTypes.ENUM("pending", "completed", "canceled"),
+                defaultValue: "pending",
+            },
             created_at: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
             },
+            updated_at: {
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW,
+                onUpdate: DataTypes.NOW,
+            },
         },
         {
-            tableName: "blogs",
+            tableName: "orders",
             timestamps: false,
         }
     );
 };
 
-export default BlogModel;
+export default OrderModel;

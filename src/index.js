@@ -22,6 +22,7 @@ const app = express();
 configViewEngine(app);
 
 // Connect to Database
+
 connectDB();
 
 // Middleware
@@ -32,7 +33,7 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 // Routes
-app.use("/", routes);
+app.use("/api/v1", routes);
 
 // Error Handler
 // app.use(errorHandler);

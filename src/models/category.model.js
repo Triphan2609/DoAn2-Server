@@ -1,27 +1,31 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
 
-const Category = sequelize.define(
-    "Category",
-    {
-        category_id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
+const CategoryModel = (sequelize) => {
+    return sequelize.define(
+        "Category",
+        {
+            category_id: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            name: {
+                type: DataTypes.STRING(255),
+                allowNull: false,
+            },
+            description: {
+                type: DataTypes.TEXT,
+            },
+            created_at: {
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW,
+            },
         },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        description: {
-            type: DataTypes.TEXT,
-        },
-    },
-    {
-        timestamps: true,
-        createdAt: "created_at",
-        updatedAt: false,
-    }
-);
+        {
+            tableName: "categories",
+            timestamps: false,
+        }
+    );
+};
 
-export { Category };
+export default CategoryModel;

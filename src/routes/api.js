@@ -5,7 +5,7 @@ import { getHomepage } from "../controllers/auth.controller.js";
 // import userRoutes from "./user.routes.js";
 
 const router = Router();
-router.use("/", getHomepage);
+router.use("/home", getHomepage);
 router.use("/auth", authRoutes);
 // router.use("/products", productRoutes);
 // router.use("/users", userRoutes);
