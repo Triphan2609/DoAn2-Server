@@ -5,8 +5,8 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-
 import { connectDB } from "./config/database.js";
+import session from "express-session";
 // import errorHandler from "./middleware/errorHandler.js";
 import routes from "./routes/api.js";
 import configViewEngine from "./controllers/viewEngine.js";
@@ -31,6 +31,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(helmet());
 app.use(morgan("dev"));
+
+// Khởi tạo Passport
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+    })
+);
 
 // Routes
 app.use("/api/v1", routes);
