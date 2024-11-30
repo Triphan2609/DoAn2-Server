@@ -5,16 +5,21 @@ const CategoryModel = (sequelize) => {
         "Category",
         {
             category_id: {
-                type: DataTypes.INTEGER,
-                primaryKey: true,
-                autoIncrement: true,
+                type: DataTypes.STRING,
+                allowNull: false,
             },
             name: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
             },
-            description: {
-                type: DataTypes.TEXT,
+            animal_id: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                references: {
+                    model: "animals",
+                    key: "animal_id",
+                },
+                onDelete: "CASCADE",
             },
             created_at: {
                 type: DataTypes.DATE,
@@ -24,6 +29,12 @@ const CategoryModel = (sequelize) => {
         {
             tableName: "categories",
             timestamps: false,
+            indexes: [
+                {
+                    unique: true,
+                    fields: ["category_id", "animal_id"], // Đặt category_id và animal_id là khóa chính phức hợp
+                },
+            ],
         }
     );
 };

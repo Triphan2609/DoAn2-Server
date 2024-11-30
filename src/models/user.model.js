@@ -28,10 +28,6 @@ const UserModel = (sequelize) => {
             address: {
                 type: DataTypes.TEXT,
             },
-            role: {
-                type: DataTypes.ENUM("admin", "customer"),
-                defaultValue: "customer",
-            },
             google_id: {
                 type: DataTypes.STRING,
                 unique: true,
@@ -44,6 +40,10 @@ const UserModel = (sequelize) => {
             google_email: {
                 type: DataTypes.STRING,
                 allowNull: true,
+            },
+            role: {
+                type: DataTypes.ENUM("admin", "customer"),
+                defaultValue: "customer",
             },
 
             created_at: {

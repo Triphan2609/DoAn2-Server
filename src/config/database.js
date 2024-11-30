@@ -12,10 +12,11 @@ export const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST,
         dialect: "mysql",
-        logging: console.log,
+        logging: false, // Tắt log
     }
 );
 
+// Tạo và cập nhật bảng
 export const models = initModels(sequelize);
 
 // Kết nối cơ sở dữ liệu
@@ -26,7 +27,7 @@ export const connectDB = async () => {
         console.log("Database connected successfully");
 
         // Đồng bộ hóa các model với cơ sở dữ liệu
-        await sequelize.sync({ alter: true }); // Tạo bảng nếu chưa tồn tại
+        await sequelize.sync({ force: false, alter: false }); // Tạo bảng nếu chưa tồn tại
         console.log("All models were synchronized successfully.");
     } catch (error) {
         console.error("Unable to connect to the database:", error);
