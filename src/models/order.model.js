@@ -26,19 +26,11 @@ const OrderModel = (sequelize) => {
                 type: DataTypes.ENUM("pending", "completed", "canceled"),
                 defaultValue: "pending",
             },
-            created_at: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW,
-            },
-            updated_at: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW,
-                onUpdate: DataTypes.NOW,
-            },
         },
         {
             tableName: "orders",
-            timestamps: false,
+            timestamps: true,
+            underscored: true,
         }
     );
 };

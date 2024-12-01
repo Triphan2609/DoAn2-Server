@@ -15,7 +15,8 @@ const BrandModel = (sequelize) => {
         },
         {
             tableName: "brands", // Tên bảng trong cơ sở dữ liệu
-            timestamps: false, // Không sử dụng createdAt và updatedAt
+            timestamps: true, //
+            underscored: true,
         }
     );
 };

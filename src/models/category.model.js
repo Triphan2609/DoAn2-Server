@@ -21,14 +21,11 @@ const CategoryModel = (sequelize) => {
                 },
                 onDelete: "CASCADE",
             },
-            created_at: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW,
-            },
         },
         {
             tableName: "categories",
-            timestamps: false,
+            timestamps: true,
+            underscored: true,
             indexes: [
                 {
                     unique: true,

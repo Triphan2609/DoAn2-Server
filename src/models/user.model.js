@@ -45,15 +45,11 @@ const UserModel = (sequelize) => {
                 type: DataTypes.ENUM("admin", "customer"),
                 defaultValue: "customer",
             },
-
-            created_at: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW,
-            },
         },
         {
             tableName: "users",
-            timestamps: false,
+            timestamps: true,
+            underscored: true,
         }
     );
 };

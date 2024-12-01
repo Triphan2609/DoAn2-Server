@@ -38,7 +38,8 @@ const OrderDetailModel = (sequelize) => {
         },
         {
             tableName: "order_details",
-            timestamps: false,
+            timestamps: true,
+            underscored: true,
         }
     );
 };

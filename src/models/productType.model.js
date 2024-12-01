@@ -21,14 +21,11 @@ const ProductTypeModel = (sequelize) => {
                 },
                 onDelete: "CASCADE",
             },
-            created_at: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW, // Ngày tạo loại sản phẩm
-            },
         },
         {
             tableName: "product_types", // Tên bảng trong cơ sở dữ liệu
-            timestamps: false, // Không sử dụng createdAt và updatedAt
+            timestamps: true,
+            underscored: true,
         }
     );
 };

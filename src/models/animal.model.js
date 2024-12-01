@@ -12,14 +12,10 @@ const AnimalModel = (sequelize) => {
                 type: DataTypes.STRING,
                 allowNull: false, // Chó, Mèo
             },
-            created_at: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW,
-            },
         },
         {
             tableName: "animals",
-            timestamps: false, // No timestamps needed
+            timestamps: true,
         }
     );
 };

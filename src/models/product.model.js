@@ -15,6 +15,7 @@ const ProductModel = (sequelize) => {
             },
             description: {
                 type: DataTypes.TEXT, // Mô tả sản phẩm có thể dài
+                defaultValue: "", // Mặc định mô tả trống nếu không có giá trị
             },
             price: {
                 type: DataTypes.DECIMAL(10, 3), // Kiểu dữ liệu giá trị sản phẩm
@@ -53,15 +54,13 @@ const ProductModel = (sequelize) => {
             },
             image_url: {
                 type: DataTypes.STRING, // URL ảnh của sản phẩm
-            },
-            created_at: {
-                type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW, // Ngày tạo sản phẩm
+                defaultValue: "", // Mặc định trống nếu không có giá trị
             },
         },
         {
             tableName: "products", // Tên bảng trong cơ sở dữ liệu
-            timestamps: false, // Không sử dụng createdAt và updatedAt
+            timestamps: true, // Để Sequelize tự động quản lý createdAt và updatedAt
+            underscored: true,
         }
     );
 };
