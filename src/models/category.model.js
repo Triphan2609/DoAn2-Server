@@ -5,6 +5,7 @@ const CategoryModel = (sequelize) => {
         "Category",
         {
             category_id: {
+                primaryKey: true,
                 type: DataTypes.STRING,
                 allowNull: false,
             },

@@ -3,6 +3,7 @@ import authRoutes from "./auth.routers.js";
 import productRoutes from "./product.routes.js";
 import categoryRoutes from "./category.routes.js";
 import brandRoutes from "./brand.routes.js";
+import animalRoutes from "./animal.routes.js";
 
 import { getHomepage } from "../controllers/auth.controller.js";
 
@@ -12,6 +13,7 @@ router.use("/auth", authRoutes);
 router.use("/products", productRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/brands", brandRoutes);
+router.use("/animal", animalRoutes);
 
 export default router;
 

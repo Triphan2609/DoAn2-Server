@@ -1,4 +1,5 @@
 import { DataTypes } from "sequelize";
+import slugify from "slugify";
 
 const ProductModel = (sequelize) => {
     return sequelize.define(
@@ -56,11 +57,42 @@ const ProductModel = (sequelize) => {
                 type: DataTypes.STRING, // URL ảnh của sản phẩm
                 defaultValue: "", // Mặc định trống nếu không có giá trị
             },
+            slug: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                unique: true, // Đảm bảo slug là duy nhất trong cơ sở dữ liệu
+            },
         },
         {
             tableName: "products", // Tên bảng trong cơ sở dữ liệu
             timestamps: true, // Để Sequelize tự động quản lý createdAt và updatedAt
             underscored: true,
+            hooks: {
+                beforeSave: async (product) => {
+                    console.log("Before save hook triggered");
+                    if (!product.slug) {
+                        product.slug = slugify(product.name, {
+                            lower: true,
+                            strict: true,
+                        });
+                        console.log("Generated slug:", product.slug);
+                    }
+
+                    // Kiểm tra nếu slug đã có trong database
+                    const existingProduct =
+                        await sequelize.models.Product.findOne({
+                            where: { slug: product.slug },
+                        });
+
+                    if (existingProduct) {
+                        product.slug = `${product.slug}-${Date.now()}`;
+                        console.log(
+                            "Updated slug with timestamp:",
+                            product.slug
+                        );
+                    }
+                },
+            },
         }
     );
 };
