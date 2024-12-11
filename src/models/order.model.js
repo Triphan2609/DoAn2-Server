@@ -11,7 +11,7 @@ const OrderModel = (sequelize) => {
             },
             user_id: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: null,
                 references: {
                     model: "users",
                     key: "user_id",
@@ -30,6 +30,10 @@ const OrderModel = (sequelize) => {
                 type: DataTypes.STRING,
                 allowNull: false, // Bắt buộc nhập họ và tên
             },
+            email: {
+                type: DataTypes.STRING,
+                allowNull: false, // Bắt buộc nhập họ và tên
+            },
             phone: {
                 type: DataTypes.STRING,
                 allowNull: false, // Bắt buộc nhập số điện thoại
@@ -37,6 +41,10 @@ const OrderModel = (sequelize) => {
             address: {
                 type: DataTypes.TEXT,
                 allowNull: false, // Bắt buộc nhập địa chỉ
+            },
+            description: {
+                type: DataTypes.TEXT,
+                allowNull: true,
             },
         },
         {

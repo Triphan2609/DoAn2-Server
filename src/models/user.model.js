@@ -24,9 +24,11 @@ const UserModel = (sequelize) => {
             },
             phone: {
                 type: DataTypes.STRING(15),
+                allowNull: true,
             },
             address: {
                 type: DataTypes.TEXT,
+                allowNull: true,
             },
             google_id: {
                 type: DataTypes.STRING,

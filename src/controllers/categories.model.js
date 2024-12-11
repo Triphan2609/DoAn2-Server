@@ -1,6 +1,6 @@
 import { models } from "../config/database.js";
 
-const { Category, Animal } = models; // Lấy User từ models đã khởi tạo
+const { Category, Animal } = models;
 
 // Controller để lấy tất cả danh mục
 export const getAllCategories = async (req, res) => {

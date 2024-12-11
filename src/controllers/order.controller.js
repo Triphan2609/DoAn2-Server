@@ -1,5 +1,18 @@
-const checkout = async (req, res) => {
-    const { userId, cartItems, totalPrice } = req.body; // Dữ liệu từ client: userId và danh sách sản phẩm trong giỏ hàng
+import { models } from "../config/database.js";
+
+const { Order, OrderDetail, Product } = models;
+
+export const checkoutCOD = async (req, res) => {
+    const {
+        userId,
+        cartItems,
+        totalPrice,
+        customer_name,
+        email,
+        phone,
+        address,
+        description,
+    } = req.body; // Dữ liệu từ client: userId và danh sách sản phẩm trong giỏ hàng
 
     if (!userId || !cartItems || cartItems.length === 0) {
         return res
@@ -7,28 +20,25 @@ const checkout = async (req, res) => {
             .json({ message: "Thông tin đơn hàng không hợp lệ" });
     }
 
-    // let totalPrice = 0;
-    // for (let item of cartItems) {
-    //     const product = await ProductModel.findByPk(item.productId); // Lấy sản phẩm từ database
-    //     if (product) {
-    //         totalPrice += product.price * item.quantity;
-    //     }
-    // }
-
     // Tạo đơn hàng trong bảng 'orders'
-    const newOrder = await OrderModel.create({
+    const newOrder = await Order.create({
         user_id: userId,
         total_price: totalPrice,
-        status: "pending", // Trạng thái đơn hàng ban đầu là 'pending'
+        status: "pending",
+        customer_name,
+        email,
+        phone,
+        address,
+        description,
     });
 
     // Bước 3: Tạo các chi tiết đơn hàng trong bảng 'order_details'
     for (let item of cartItems) {
-        const product = await ProductModel.findByPk(item.productId);
+        const product = await Product.findByPk(item.product_id);
         if (product) {
-            await OrderDetailModel.create({
+            await OrderDetail.create({
                 order_id: newOrder.order_id,
-                product_id: item.productId,
+                product_id: item.product_id,
                 quantity: item.quantity,
                 unit_price: product.price,
             });
@@ -36,7 +46,7 @@ const checkout = async (req, res) => {
     }
 
     // Bước 4: Trả về thông tin đơn hàng và thanh toán
-    res.json({
+    res.status(200).json({
         message: "Đơn hàng đã được tạo thành công",
         orderId: newOrder.order_id,
         totalPrice,
