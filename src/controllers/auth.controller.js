@@ -74,10 +74,11 @@ export const login = async (req, res) => {
         );
         res.json({
             user: {
-                id: user.id,
+                user_id: user.user_id,
                 email: user.email,
-                phone: user.phone,
                 name: user.name,
+                phone: user.phone,
+                address: user.address,
                 role: user.role,
             },
             token,
@@ -117,6 +118,7 @@ export const google = async (req, res) => {
                 google_email: email,
                 email,
                 name,
+                method: "google",
             });
         }
 
@@ -133,9 +135,11 @@ export const google = async (req, res) => {
         // Trả về thông tin người dùng và token
         res.json({
             user: {
-                id: user.user_id,
+                user_id: user.user_id,
                 email: user.email,
                 name: user.name,
+                phone: user.phone,
+                address: user.address,
                 role: user.role,
             },
             token,

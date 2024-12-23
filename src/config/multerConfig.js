@@ -1,10 +1,17 @@
+import fs from "fs";
 import multer from "multer";
 import path from "path";
+
+// Kiểm tra và tạo thư mục uploads nếu chưa tồn tại
+const uploadDir = "public";
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Cấu hình nơi lưu trữ hình ảnh
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads/"); // Lưu vào thư mục uploads
+        cb(null, uploadDir); // Lưu vào thư mục uploads
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + path.extname(file.originalname);
@@ -34,4 +41,9 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn kích thước file 5MB
 }).array("images", 5); // "images" là tên field, 5 là số lượng hình ảnh tối đa
 
-export default upload;
+const uploadSingle = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+}).single("image");
+
+export { upload, uploadSingle };

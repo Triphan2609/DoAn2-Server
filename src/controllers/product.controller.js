@@ -1,13 +1,13 @@
 import { models } from "../config/database.js";
-import { Op, Sequelize } from "sequelize"; // Import Op for Sequelize operators
+import { Op } from "sequelize"; // Import Op for Sequelize operators
 import moment from "moment"; // Import moment.js to handle date manipulation
+import fs from "fs";
+import path from "path";
 
-const { Product, ProductType, Category, Animal } = models; // Lấy User từ models đã khởi tạo
+const { Product, Category, Brand, ProductType } = models; // Lấy User từ models đã khởi tạo
 
-// Lấy tất cả các thương hiệu
 export const getAllProducts = async (req, res) => {
     try {
-        // Lấy tất cả thương hiệu từ cơ sở dữ liệu
         const products = await Product.findAll();
 
         // Trả về kết quả dưới dạng JSON
@@ -15,6 +15,59 @@ export const getAllProducts = async (req, res) => {
     } catch (error) {
         console.error("Error fetching products:", error);
         res.status(500).json({ message: "Lỗi khi lấy danh sách thương hiệu" });
+    }
+};
+
+export const getAllProductsPaginationAdmin = async (req, res) => {
+    const { page, limit } = req.query; // Lấy page và limit từ query parameters
+
+    const offset = (page - 1) * limit; // Tính toán offset cho phân trang
+
+    try {
+        // Lấy tất cả sản phẩm với thông tin liên quan từ các bảng khác (brand, product_type, category)
+        const products = await Product.findAndCountAll({
+            limit: parseInt(limit), // Số lượng sản phẩm trên mỗi trang
+            offset: parseInt(offset), // Bắt đầu từ record nào
+            order: [["created_at", "DESC"]], // Sắp xếp theo ngày tạo
+            include: [
+                {
+                    model: Brand,
+                    attributes: ["name"], // Lấy tên của brand
+                },
+                {
+                    model: ProductType,
+                    attributes: ["name"], // Lấy tên của product_type
+                },
+                {
+                    model: Category,
+                    attributes: ["name"], // Lấy tên của category
+                },
+            ],
+        });
+
+        // Trả về kết quả
+        res.json({
+            totalProducts: products.count, // Tổng số sản phẩm
+            totalPages: Math.ceil(products.count / limit), // Tổng số trang
+            currentPage: page, // Trang hiện tại
+            products: products.rows.map((product) => {
+                // Kiểm tra và đảm bảo image_url là mảng
+                const imageUrls = Array.isArray(product.image_url)
+                    ? product.image_url
+                    : [product.image_url];
+
+                return {
+                    ...product.toJSON(), // Lấy tất cả các thuộc tính của sản phẩm
+                    brand_name: product.Brand.name, // Thêm tên thương hiệu
+                    product_type_name: product.ProductType.name, // Thêm tên loại sản phẩm
+                    category_name: product.Category.name, // Thêm tên danh mục
+                    image_url: JSON.parse(imageUrls), // Trả về image_url như một mảng
+                };
+            }), // Thêm tên thương hiệu, loại sản phẩm và danh mục vào mỗi sản phẩm
+        });
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Lỗi khi lấy danh sách sản phẩm" });
     }
 };
 
@@ -47,7 +100,7 @@ export const getAllProductsLimit10 = async (req, res) => {
         const products = await Product.findAll({
             where: {
                 quantity: {
-                    [Op.gt]: 100, // Sử dụng Op.gt để lọc số lượng lớn hơn 100
+                    [Op.gt]: 10, // Sử dụng Op.gt để lọc số lượng lớn hơn 100
                 },
             },
             limit: 10,
@@ -371,9 +424,6 @@ export const getAllProductsAnimalPagination = async (req, res) => {
             }
         }
 
-        // Debugging the where conditions
-        console.log("Where conditions: ", whereConditions);
-
         const products = await Product.findAll({
             where: whereConditions,
             limit: limitInt,
@@ -436,6 +486,19 @@ export const getProductDetails = async (req, res) => {
     }
 };
 
+export const getAllProductsType = async (req, res) => {
+    try {
+        // Lấy tất cả categories từ cơ sở dữ liệu
+        const product_type = await ProductType.findAll();
+
+        // Trả về kết quả dưới dạng JSON
+        res.status(200).json(product_type);
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        res.status(500).json({ message: "Lỗi khi lấy danh mục" });
+    }
+};
+
 export const createProduct = async (req, res) => {
     try {
         const {
@@ -452,8 +515,11 @@ export const createProduct = async (req, res) => {
 
         if (req.files) {
             // Lưu các đường dẫn ảnh đã tải lên
-            imageUrls = req.files.map((file) => `/uploads/${file.filename}`);
+            imageUrls = req.files.map((file) => `${file.filename}`);
         }
+
+        // Nếu lưu dưới dạng chuỗi JSON
+        const imageUrlsString = JSON.stringify(imageUrls);
 
         // Tạo sản phẩm với nhiều hình ảnh
         const product = await Product.create({
@@ -461,13 +527,14 @@ export const createProduct = async (req, res) => {
             description,
             price,
             quantity,
-            image_urls: imageUrls, // Lưu mảng đường dẫn hình ảnh vào cơ sở dữ liệu
+            image_url: imageUrlsString, // Lưu chuỗi JSON vào cơ sở dữ liệu
             category_id,
             brand_id,
             product_type_id,
         });
 
         return res.status(201).json({
+            ec: 1,
             message: "Sản phẩm được tạo thành công",
             product,
         });
@@ -475,7 +542,82 @@ export const createProduct = async (req, res) => {
         console.error("Error creating product:", error);
         return res
             .status(500)
-            .json({ message: "Đã có lỗi xảy ra khi tạo sản phẩm" });
+            .json({ ec: 0, message: "Đã có lỗi xảy ra khi tạo sản phẩm" });
+    }
+};
+
+export const updateProduct = async (req, res) => {
+    const { productId } = req.params;
+    const {
+        name,
+        description,
+        price,
+        quantity,
+        category_id,
+        brand_id,
+        product_type_id,
+    } = req.body;
+    console.log(name);
+
+    try {
+        const product = await Product.findByPk(productId);
+        if (!product) {
+            return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+        }
+
+        // Cập nhật thông tin sản phẩm
+        product.name = name;
+        product.description = description;
+        product.price = price;
+        product.quantity = quantity;
+        product.category_id = category_id;
+        product.brand_id = brand_id;
+        product.product_type_id = product_type_id;
+
+        await product.save();
+
+        res.status(200).json({
+            ec: 1,
+            message: "Cập nhật sản phẩm thành công",
+            product,
+        });
+    } catch (error) {
+        console.error("Error updating product:", error);
+        res.status(500).json({
+            ec: 0,
+            message: "Đã xảy ra lỗi khi cập nhật sản phẩm",
+        });
+    }
+};
+
+export const deleteProduct = async (req, res) => {
+    const { productId } = req.params; // Lấy ID từ params
+
+    try {
+        // Kiểm tra xem sản phẩm có tồn tại không
+        const product = await Product.findByPk(productId);
+
+        if (!product) {
+            return res.status(404).json({
+                message: "Sản phẩm không tồn tại",
+            });
+        }
+
+        // Xoá sản phẩm
+        await product.destroy();
+
+        // Phản hồi xoá thành công
+        return res.status(200).json({
+            ec: 1,
+            message: "Sản phẩm đã được xoá thành công",
+        });
+    } catch (error) {
+        console.error("Lỗi xoá sản phẩm:", error);
+        return res.status(500).json({
+            ec: 0,
+            message: "Đã xảy ra lỗi khi xoá sản phẩm",
+            error: error.message,
+        });
     }
 };
 
@@ -512,5 +654,223 @@ export const searchProducts = async (req, res) => {
         return res
             .status(500)
             .json({ message: "Đã có lỗi khi tìm kiếm sản phẩm" });
+    }
+};
+
+export const deleteImage = async (req, res) => {
+    try {
+        const { productId, imageName } = req.query;
+
+        // Tìm sản phẩm theo ID
+        const product = await Product.findByPk(productId);
+        if (!product) {
+            return res.status(404).json({
+                ec: 0,
+                message: "Sản phẩm không tồn tại",
+            });
+        }
+
+        // Lấy danh sách hình ảnh từ cơ sở dữ liệu
+        let imageUrls = JSON.parse(product.image_url || "[]");
+
+        // Kiểm tra nếu chỉ còn một hình ảnh, không cho phép xóa
+        if (imageUrls.length === 1) {
+            return res.status(400).json({
+                ec: 0,
+                message:
+                    "Không thể xóa hình ảnh cuối cùng. Mỗi sản phẩm phải có ít nhất một hình ảnh.",
+            });
+        }
+
+        // Kiểm tra xem hình ảnh có tồn tại trong danh sách hay không
+        if (!imageUrls.includes(imageName)) {
+            return res.status(404).json({
+                ec: 0,
+                message: "Hình ảnh không tồn tại trong sản phẩm",
+            });
+        }
+
+        // Xóa hình ảnh khỏi danh sách
+        imageUrls = imageUrls.filter((image) => image !== imageName);
+
+        // Cập nhật cơ sở dữ liệu với danh sách mới
+        product.image_url = JSON.stringify(imageUrls);
+        await product.save();
+
+        // Xóa tệp hình ảnh khỏi hệ thống tệp
+        const filePath = path.join("public", imageName);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        return res.status(200).json({
+            ec: 1,
+            message: "Hình ảnh đã được xóa thành công",
+        });
+    } catch (error) {
+        console.error("Error deleting image:", error);
+        return res.status(500).json({
+            ec: 0,
+            message: "Đã có lỗi xảy ra khi xóa hình ảnh",
+        });
+    }
+};
+
+export const updateAllImages = async (req, res) => {
+    try {
+        const { productId, oldImages } = req.body;
+
+        // Tìm sản phẩm
+        const product = await Product.findByPk(productId);
+        if (!product) {
+            return res.status(404).json({
+                ec: 0,
+                message: "Sản phẩm không tồn tại",
+            });
+        }
+
+        // Chuyển chuỗi phân cách bằng dấu phẩy thành mảng nếu cần thiết
+        const imagesToDelete = Array.isArray(oldImages)
+            ? oldImages
+            : oldImages.split(",");
+
+        // Xóa tất cả hình ảnh cũ khỏi hệ thống
+        imagesToDelete.forEach((image) => {
+            const filePath = path.join("public", image);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        });
+
+        // Thêm hình ảnh mới
+        const newImageUrls = req.files.map((file) => file.filename);
+
+        // Cập nhật cơ sở dữ liệu với danh sách hình ảnh mới
+        product.image_url = JSON.stringify(newImageUrls);
+        await product.save();
+
+        return res.status(200).json({
+            ec: 1,
+            message: "Cập nhật hình ảnh thành công",
+            updatedImages: newImageUrls,
+        });
+    } catch (error) {
+        console.error("Error updating images:", error);
+        return res.status(500).json({
+            ec: 0,
+            message: "Đã có lỗi xảy ra khi cập nhật hình ảnh",
+        });
+    }
+};
+
+export const updateSingleImage = async (req, res) => {
+    try {
+        const { productId, oldImage } = req.body;
+        console.log(oldImage);
+
+        // Tìm sản phẩm
+        const product = await Product.findByPk(productId);
+        if (!product) {
+            return res.status(404).json({
+                ec: 0,
+                message: "Sản phẩm không tồn tại",
+            });
+        }
+
+        // Lấy danh sách hình ảnh hiện tại từ cơ sở dữ liệu
+        let imageUrls = JSON.parse(product.image_url || "[]");
+
+        // Xóa hình ảnh cũ khỏi hệ thống
+        const filePath = path.join("public", oldImage);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        // Thêm hình ảnh mới
+        const newImageUrl = req.file.filename;
+        console.log(imageUrls, oldImage);
+
+        // Thay thế hình ảnh cũ bằng hình ảnh mới trong danh sách
+        imageUrls = imageUrls.map((image) =>
+            image === oldImage ? newImageUrl : image
+        );
+
+        // Cập nhật cơ sở dữ liệu
+        product.image_url = JSON.stringify(imageUrls);
+        await product.save();
+
+        return res.status(200).json({
+            ec: 1,
+            message: "Cập nhật hình ảnh thành công",
+            updatedImages: imageUrls,
+        });
+    } catch (error) {
+        console.error("Error updating image:", error);
+        return res.status(500).json({
+            ec: 0,
+            message: "Đã có lỗi xảy ra khi cập nhật hình ảnh",
+        });
+    }
+};
+
+export const getAllProductsImages = async (req, res) => {
+    try {
+        // Lấy tất cả sản phẩm từ cơ sở dữ liệu
+        const products = await Product.findAll();
+
+        // Lấy tất cả hình ảnh từ các sản phẩm
+        const allImages = products
+            .map((product) => {
+                // Parse image_url từ chuỗi JSON
+                const images = JSON.parse(product.image_url || "[]");
+                return images;
+            })
+            .flat(); // Làm phẳng mảng các mảng hình ảnh thành một mảng duy nhất
+
+        // Trả về danh sách hình ảnh
+        res.status(200).json(allImages);
+    } catch (error) {
+        console.error("Error fetching product images:", error);
+        res.status(500).json({
+            message: "Lỗi khi lấy danh sách hình ảnh sản phẩm",
+        });
+    }
+};
+
+export const addImages = async (req, res) => {
+    try {
+        const { productId } = req.body;
+
+        // Tìm sản phẩm theo ID
+        const product = await Product.findByPk(productId);
+        if (!product) {
+            return res.status(404).json({
+                ec: 0,
+                message: "Sản phẩm không tồn tại",
+            });
+        }
+
+        // Lấy danh sách hình ảnh hiện tại
+        let currentImages = JSON.parse(product.image_url || "[]");
+
+        // Thêm hình ảnh mới vào danh sách
+        const newImages = req.files.map((file) => file.filename);
+        currentImages = [...currentImages, ...newImages];
+
+        // Cập nhật cơ sở dữ liệu
+        product.image_url = JSON.stringify(currentImages);
+        await product.save();
+
+        return res.status(200).json({
+            ec: 1,
+            message: "Hình ảnh đã được thêm thành công",
+            updatedImages: currentImages,
+        });
+    } catch (error) {
+        console.error("Error adding images:", error);
+        return res.status(500).json({
+            ec: 0,
+            message: "Đã có lỗi xảy ra khi thêm hình ảnh",
+        });
     }
 };

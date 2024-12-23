@@ -42,8 +42,11 @@ const initModels = (sequelize) => {
     Product.belongsTo(Brand, { foreignKey: "brand_id" });
 
     // Category has many Products (1 to many)
-    Category.hasMany(Product, { foreignKey: "category_id" });
+    Category.hasMany(ProductType, { foreignKey: "category_id" });
     ProductType.belongsTo(Category, { foreignKey: "category_id" });
+
+    ProductType.hasMany(Product, { foreignKey: "product_type_id" });
+    Product.belongsTo(ProductType, { foreignKey: "product_type_id" });
 
     return {
         User,

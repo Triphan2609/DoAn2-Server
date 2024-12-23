@@ -54,7 +54,7 @@ const ProductModel = (sequelize) => {
                 onDelete: "CASCADE", // Nếu xóa product_type, sản phẩm cũng bị xóa
             },
             image_url: {
-                type: DataTypes.STRING, // URL ảnh của sản phẩm
+                type: DataTypes.TEXT, // URL ảnh của sản phẩm
                 defaultValue: "", // Mặc định trống nếu không có giá trị
             },
             slug: {
@@ -75,7 +75,6 @@ const ProductModel = (sequelize) => {
                             lower: true,
                             strict: true,
                         });
-                        console.log("Generated slug:", product.slug);
                     }
 
                     // Kiểm tra nếu slug đã có trong database

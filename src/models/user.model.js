@@ -10,16 +10,16 @@ const UserModel = (sequelize) => {
                 autoIncrement: true,
             },
             name: {
-                type: DataTypes.STRING(100),
+                type: DataTypes.STRING,
                 allowNull: false,
             },
             email: {
-                type: DataTypes.STRING(100),
+                type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
             },
             password: {
-                type: DataTypes.STRING(255),
+                type: DataTypes.STRING,
                 allowNull: true,
             },
             phone: {
@@ -33,7 +33,7 @@ const UserModel = (sequelize) => {
             google_id: {
                 type: DataTypes.STRING,
                 unique: true,
-                allowNull: true, // Có thể null nếu người dùng không đăng nhập bằng Google
+                allowNull: true,
             },
             google_name: {
                 type: DataTypes.STRING,
@@ -46,6 +46,10 @@ const UserModel = (sequelize) => {
             role: {
                 type: DataTypes.ENUM("admin", "customer"),
                 defaultValue: "customer",
+            },
+            method: {
+                type: DataTypes.ENUM("web", "google"),
+                defaultValue: "web",
             },
         },
         {

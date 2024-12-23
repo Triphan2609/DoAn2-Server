@@ -26,21 +26,25 @@ const OrderModel = (sequelize) => {
                 type: DataTypes.ENUM("pending", "completed", "canceled"),
                 defaultValue: "pending",
             },
+            payment_method: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
             customer_name: {
                 type: DataTypes.STRING,
-                allowNull: false, // Bắt buộc nhập họ và tên
+                allowNull: false,
             },
             email: {
                 type: DataTypes.STRING,
-                allowNull: false, // Bắt buộc nhập họ và tên
+                allowNull: false,
             },
             phone: {
                 type: DataTypes.STRING,
-                allowNull: false, // Bắt buộc nhập số điện thoại
+                allowNull: false,
             },
             address: {
                 type: DataTypes.TEXT,
-                allowNull: false, // Bắt buộc nhập địa chỉ
+                allowNull: false,
             },
             description: {
                 type: DataTypes.TEXT,

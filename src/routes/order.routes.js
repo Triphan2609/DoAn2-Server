@@ -1,9 +1,17 @@
 import { Router } from "express";
-import { checkoutCOD } from "../controllers/order.controller.js";
+import {
+    callBackSuccess,
+    checkoutCOD,
+    checkoutZaloPay,
+    getAllOrderByUserId,
+    getAllOrdersWithPagination,
+} from "../controllers/order.controller.js";
 const router = Router();
 
+router.get("/all", getAllOrdersWithPagination);
+router.get("/:userId", getAllOrderByUserId);
 router.post("/cod", checkoutCOD);
-// router.post("/login", login);
-// router.post("/google", google);
+router.post("/zalopay", checkoutZaloPay);
+router.post("/zalopay/callback", callBackSuccess);
 
 export default router;
