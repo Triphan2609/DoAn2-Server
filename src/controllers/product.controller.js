@@ -486,19 +486,6 @@ export const getProductDetails = async (req, res) => {
     }
 };
 
-export const getAllProductsType = async (req, res) => {
-    try {
-        // Lấy tất cả categories từ cơ sở dữ liệu
-        const product_type = await ProductType.findAll();
-
-        // Trả về kết quả dưới dạng JSON
-        res.status(200).json(product_type);
-    } catch (error) {
-        console.error("Error fetching categories:", error);
-        res.status(500).json({ message: "Lỗi khi lấy danh mục" });
-    }
-};
-
 export const createProduct = async (req, res) => {
     try {
         const {
@@ -871,6 +858,114 @@ export const addImages = async (req, res) => {
         return res.status(500).json({
             ec: 0,
             message: "Đã có lỗi xảy ra khi thêm hình ảnh",
+        });
+    }
+};
+
+export const getAllProductsType = async (req, res) => {
+    try {
+        // Lấy tất cả categories từ cơ sở dữ liệu
+        const product_type = await ProductType.findAll();
+
+        // Trả về kết quả dưới dạng JSON
+        res.status(200).json(product_type);
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        res.status(500).json({ message: "Lỗi khi lấy danh mục" });
+    }
+};
+
+export const createProductType = async (req, res) => {
+    try {
+        const { product_type_id, name, category_id } = req.body;
+
+        // Kiểm tra dữ liệu đầu vào
+        if (!product_type_id || !name || !category_id) {
+            return res.status(400).json({
+                ec: 0,
+                message: "Vui lòng cung cấp đầy đủ thông tin!",
+            });
+        }
+
+        // Tạo Product Type mới
+        const newProductType = await ProductType.create({
+            product_type_id,
+            name,
+            category_id,
+        });
+
+        return res.status(201).json({
+            ec: 1,
+            message: "Loại sản phẩm đã được thêm thành công!",
+            data: newProductType,
+        });
+    } catch (error) {
+        console.error("Error creating product type:", error);
+        return res.status(500).json({
+            ec: 0,
+            message: "Đã xảy ra lỗi khi thêm loại sản phẩm",
+        });
+    }
+};
+
+export const updateProductType = async (req, res) => {
+    try {
+        const { product_type_id } = req.params;
+        const { name, category_id } = req.body;
+
+        // Tìm loại sản phẩm theo ID
+        const productType = await ProductType.findByPk(product_type_id);
+        if (!productType) {
+            return res.status(404).json({
+                ec: 0,
+                message: "Loại sản phẩm không tồn tại!",
+            });
+        }
+
+        // Cập nhật thông tin
+        productType.name = name || productType.name;
+        productType.category_id = category_id || productType.category_id;
+        await productType.save();
+
+        return res.status(200).json({
+            ec: 1,
+            message: "Loại sản phẩm đã được cập nhật thành công!",
+            data: productType,
+        });
+    } catch (error) {
+        console.error("Error updating product type:", error);
+        return res.status(500).json({
+            ec: 0,
+            message: "Đã xảy ra lỗi khi cập nhật loại sản phẩm",
+        });
+    }
+};
+
+export const deleteProductType = async (req, res) => {
+    try {
+        const { product_type_id } = req.params;
+
+        // Tìm loại sản phẩm theo ID
+        const productType = await ProductType.findByPk(product_type_id);
+        if (!productType) {
+            return res.status(404).json({
+                ec: 0,
+                message: "Loại sản phẩm không tồn tại!",
+            });
+        }
+
+        // Xóa loại sản phẩm
+        await productType.destroy();
+
+        return res.status(200).json({
+            ec: 1,
+            message: "Loại sản phẩm đã được xóa thành công!",
+        });
+    } catch (error) {
+        console.error("Error deleting product type:", error);
+        return res.status(500).json({
+            ec: 0,
+            message: "Đã xảy ra lỗi khi xóa loại sản phẩm",
         });
     }
 };
