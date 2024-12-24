@@ -27,7 +27,7 @@ const OrderDetailModel = (sequelize) => {
                 },
                 onDelete: "CASCADE",
             },
-            quantity: {
+            unit_quantity: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },

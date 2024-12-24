@@ -23,8 +23,8 @@ const OrderModel = (sequelize) => {
                 allowNull: false,
             },
             status: {
-                type: DataTypes.ENUM("pending", "completed", "canceled"),
-                defaultValue: "pending",
+                type: DataTypes.ENUM("Chờ duyệt", "Hoàn thành", "Huỷ bỏ"),
+                defaultValue: "Chờ duyệt",
             },
             payment_method: {
                 type: DataTypes.STRING,
